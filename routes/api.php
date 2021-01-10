@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 |
 */
 
+//Route::post('posts/{post}/favorite', 'PostController@favorite')->name('post.favorite');
+
 Route::group(['as' => 'api.', 'namespace' => 'Api', 'middleware' => 'auth:firebase'], function () {
     Route::post('create_customer', 'UserProfileController@stripe_create_customer')->name('profile.stripe_create_customer');
     Route::post('ephemeral_keys', 'UserProfileController@ephemeral_keys')->name('profile.ephemeral_keys');
@@ -24,6 +26,7 @@ Route::group(['as' => 'api.', 'namespace' => 'Api', 'middleware' => 'auth:fireba
     Route::get('profile/following/{userProfile}', 'UserProfileController@following')->name('profile.following');
     Route::post('profile/search', 'UserProfileController@search')->name('profile.search');
     Route::post('profile/follow/{userProfile}', 'UserProfileController@follow')->name('profile.follow');
+    Route::get('follow/suggestions', 'UserProfileController@followSuggestion')->name('profile.followsuggestions');
 
     Route::get('categories', 'CategoryController@index')->name('category.index');
 
@@ -34,6 +37,7 @@ Route::group(['as' => 'api.', 'namespace' => 'Api', 'middleware' => 'auth:fireba
     Route::delete('posts/{post}/delete', 'PostController@destroy')->name('posts.destroy');
     Route::post('posts/{post}/like', 'PostController@like')->name('post.like');
     Route::post('posts/{post}/dislike', 'PostController@dislike')->name('post.dislike');
+    Route::post('posts/{post}/favorite', 'PostController@favorite')->name('post.favorite');
     Route::post('posts/{post}/share', 'PostController@share')->name('post.share');
     Route::get('stories/users', 'PostController@storyUsers')->name('post.stories.users');
     Route::get('stories/users/{userProfile}', 'PostController@stories')->name('post.stories');
@@ -42,6 +46,8 @@ Route::group(['as' => 'api.', 'namespace' => 'Api', 'middleware' => 'auth:fireba
     Route::post('posts/{post}/comments', 'CommentController@store')->name('comment.create');
     Route::post('comments/{comment}/like', 'CommentController@like')->name('comment.like');
     Route::post('comments/{comment}/dislike', 'CommentController@dislike')->name('comment.dislike');
+
+
 
     //Route::get('activities', 'UserProfileController@activities')->name('activities.index');
     Route::get('activities', 'PostActivityController@index')->name('activities.index');

@@ -17,6 +17,7 @@ class PostController extends Controller
     {
         $user = Auth::user();
         $profile = UserProfile::where('user_id', $user->id)->firstOrFail();
+        //$profile = UserProfile::where('user_id', 'hX87SFJ1NSMRpf1FsP0IyyOswbW2')->firstOrFail();
 
         $countsQuery = [
             'post_activities as like_count' => function ($query) {
@@ -39,6 +40,10 @@ class PostController extends Controller
             'post_activities as commented' => function ($query) use ($profile) {
                 $query->where('user_profile_id', $profile->id)
                     ->where('type', config('constants.POST_ACTIVITY_COMMENT'));
+            },
+            'post_activities as favorited' => function ($query) use ($profile) {
+                $query->where('user_profile_id', $profile->id)
+                    ->where('type', config('constants.POST_ACTIVITY_FAVORITE'));
             }
         ];
         if ($request->treding === "1") {
@@ -157,11 +162,14 @@ class PostController extends Controller
     {
         $user = Auth::user();
         $profile = UserProfile::where('user_id', $user->id)->firstOrFail();
+        //$profile = UserProfile::where('user_id', 'hX87SFJ1NSMRpf1FsP0IyyOswbW2')->firstOrFail();
 
         $previousActivity = PostActivity::where('user_profile_id', $profile->id)
             ->where('post_id', $post->id)
             ->whereIn('type', array(config('constants.POST_ACTIVITY_LIKE'), config('constants.POST_ACTIVITY_DISLIKE')))
             ->first();
+
+            //return $previousActivity;
 
         if ($previousActivity) {
             $previousActivity->delete();
@@ -181,6 +189,42 @@ class PostController extends Controller
 
         return response()->json(array("id" => $post->id, "status" => $status), 200);
     }
+
+    //FAV
+    public function favorite(Post $post)
+    {
+        //return $post;
+        $status = $this->favoriteOrUnfavorite($post, config('constants.POST_ACTIVITY_FAVORITE'));
+        return response()->json(array("id" => $post->id, "status" => $status), 200);
+    }
+
+    private function favoriteOrUnfavorite($post, $type)
+    {
+        $user = Auth::user();
+        //$user = User::where('id',) -> first();
+        $profile = UserProfile::where('user_id', $user->id)->firstOrFail();
+        //$profile = UserProfile::where('user_id', 'hX87SFJ1NSMRpf1FsP0IyyOswbW2')->firstOrFail();
+        //return $profile;
+        $previousActivity = PostActivity::where('user_profile_id', $profile->id)
+            ->where('post_id', $post->id)
+            ->whereIn('type', array(config('constants.POST_ACTIVITY_FAVORITE')))
+            ->first();
+
+        //return $previousActivity;
+
+        if ($previousActivity) {
+            $previousActivity->delete();
+
+            return -1; //just delete the favorite
+            /* if ($previousActivity->type == $type) {
+                return -1; // unlike or undislike
+            } */
+        }
+
+        PostHelper::createPostActivity($profile, $post->id, $type);
+        return 1; // like or dislike
+    }
+
 
     public function share(Post $post)
     {

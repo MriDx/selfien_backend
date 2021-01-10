@@ -152,6 +152,24 @@ class UserProfileController extends Controller
         //return response()->json($userProfile->followings()->get());
     }
 
+    public function followSuggestion()
+    {
+        $user = Auth::user();
+        $profile = UserProfile::where('user_id', $user->id)->firstOrFail();
+
+        $profiles = UserProfile::pluck('id')->all();
+
+        $ids = $profile->followings()->pluck('id')->all();
+
+        $f = UserProfile::whereNotIn('id', $ids) // exclude already followed
+            ->where('id', '<>', $profile->id) // and the user himself
+            ->paginate(config('constants.paginate_per_page'));
+            //->get();
+
+        return $f;
+
+    }
+
     public function activities()
     {
         //$user = Auth::user();
